@@ -1,0 +1,27 @@
+# O que NAO sobe para o Cloud Build.
+#
+# Sem este arquivo o gcloud cai no .gitignore — que neste repo fica na raiz
+# do home inteiro do usuario, nao do projeto. Ser explicito aqui evita
+# depender daquele acaso.
+
+.git
+.gitignore
+.gcloudignore
+
+# Ambientes e caches locais
+.venv/
+venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Segredos: em Cloud Run a identidade vem da service account do servico.
+.env
+.env.*
+service-account.json
+
+# Nao entram na imagem (o Dockerfile copia so app/ e requirements.txt)
+tests/
+requirements-dev.txt

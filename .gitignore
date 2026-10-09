@@ -1,0 +1,22 @@
+node_modules/
+.next/
+.env
+.env.local
+service-account.json
+__pycache__/
+*.pyc
+.venv/
+venv/
+.mypy_cache/
+.DS_Store
+*-debug.log
+hs_err_pid*.log
+
+# Configuracao de deploy (contem e-mails e ids do projeto)
+infra/deploy.env
+
+# Credenciais OAuth baixadas do console do Google. O padrao fica aqui mesmo
+# que o arquivo nao viva mais neste diretorio: baixar de novo por engano e
+# facil, e o nome que o Google da ja e previsivel.
+client_secret*.json
+*-credentials.json

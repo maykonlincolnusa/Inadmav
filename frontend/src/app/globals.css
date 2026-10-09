@@ -1,0 +1,174 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Sistema de cores do inAdmav.
+
+  A logo é branco puro sobre preto, então a identidade é monocromática: a
+  hierarquia vem de peso tipográfico, espaço e contraste — não de cor. O
+  botão principal é o inverso do fundo (preto no claro, branco no escuro),
+  o que dá o mesmo destaque que uma cor de marca daria, sem introduzir uma
+  cor que a marca não tem.
+
+  A única exceção é o vermelho de perigo: remover um membro é irreversível,
+  e sinalizar isso só com tipografia seria irresponsável.
+*/
+
+@layer base {
+  :root {
+    --fundo: 250 250 249;
+    --superficie: 255 255 255;
+    --superficie-2: 244 244 242;
+    --superficie-3: 236 236 233;
+    --borda: 228 228 225;
+    --borda-forte: 206 206 202;
+    --texto: 11 11 12;
+    --texto-suave: 92 92 90;
+    --texto-fraco: 140 140 137;
+    --inverso: 255 255 255;
+    --acento: 11 11 12;
+    --perigo: 178 58 46;
+    --perigo-suave: 251 238 236;
+    --anel: 11 11 12;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-tema="claro"]) {
+      --fundo: 11 11 12;
+      --superficie: 20 20 22;
+      --superficie-2: 28 28 31;
+      --superficie-3: 38 38 42;
+      --borda: 38 38 42;
+      --borda-forte: 58 58 63;
+      --texto: 244 244 242;
+      --texto-suave: 154 154 151;
+      --texto-fraco: 110 110 108;
+      --inverso: 11 11 12;
+      --acento: 255 255 255;
+      --perigo: 229 103 90;
+      --perigo-suave: 42 24 22;
+      --anel: 255 255 255;
+    }
+  }
+
+  :root[data-tema="escuro"] {
+    --fundo: 11 11 12;
+    --superficie: 20 20 22;
+    --superficie-2: 28 28 31;
+    --superficie-3: 38 38 42;
+    --borda: 38 38 42;
+    --borda-forte: 58 58 63;
+    --texto: 244 244 242;
+    --texto-suave: 154 154 151;
+    --texto-fraco: 110 110 108;
+    --inverso: 11 11 12;
+    --acento: 255 255 255;
+    --perigo: 229 103 90;
+    --perigo-suave: 42 24 22;
+    --anel: 255 255 255;
+  }
+
+  * {
+    @apply border-borda;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: rgb(var(--fundo));
+    color: rgb(var(--texto));
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Foco visível sempre — a secretaria navega muito por teclado ao digitar
+     dezenas de cadastros seguidos. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--anel));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: rgb(var(--texto));
+    color: rgb(var(--fundo));
+  }
+
+  /* Números tabulares em valores, datas e contagens: coluna alinhada. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .cartao {
+    @apply rounded-xl border border-borda bg-superficie;
+  }
+
+  .rotulo-campo {
+    @apply mb-1.5 block text-[0.8rem] font-medium text-texto-suave;
+  }
+
+  /* Barra de rolagem discreta, para as tabelas longas de membresia. */
+  .scroll-fino::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+  .scroll-fino::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scroll-fino::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--borda-forte));
+    border-radius: 4px;
+  }
+}
+
+/* --- Impressão -----------------------------------------------------------
+   A lista de aniversariantes vira cartaz no mural e folha na secretaria.
+   Impressão em preto sobre branco, sem navegação e sem botões.            */
+@media print {
+  :root {
+    --fundo: 255 255 255;
+    --superficie: 255 255 255;
+    --texto: 0 0 0;
+    --texto-suave: 60 60 60;
+    --borda: 190 190 190;
+  }
+
+  .nao-imprimir {
+    display: none !important;
+  }
+
+  .so-impressao {
+    display: block !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .cartao {
+    border: 1px solid #bbb;
+    break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+}
+
+.so-impressao {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

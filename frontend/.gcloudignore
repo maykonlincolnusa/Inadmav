@@ -1,0 +1,24 @@
+# O que NAO sobe para o Cloud Build.
+#
+# node_modules/ e .next/ sao os grandes: o Dockerfile roda `npm ci` e
+# `npm run build` dentro do container, entao mandar os dois daqui so
+# desperdicaria upload e ainda arriscaria misturar binarios de Windows
+# com a imagem Alpine.
+
+.git
+.gitignore
+.gcloudignore
+
+node_modules/
+.next/
+out/
+
+# .env.local aponta para http://localhost:8080. Ele nao pode entrar na
+# imagem: as NEXT_PUBLIC_* sao embutidas no bundle no momento do build, e
+# um arquivo desses viajando junto e a receita para publicar um front que
+# tenta falar com a propria maquina do usuario.
+.env
+.env.local
+.env.*.local
+
+npm-debug.log*

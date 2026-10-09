@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// The web client never accesses Firestore directly. All reads and writes go
+// through the Cloud Run API, which validates the user's role, church and cell
+// scope. The API uses the Admin SDK, so it is not limited by these rules.
+//
+// Denying client access prevents a user from bypassing API authorization with
+// the public Firebase Web App configuration.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

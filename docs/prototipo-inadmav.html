@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>inAdmav — Gestão da Igreja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F1F4F0;
+    --ink:#1A211E;
+    --muted:#68746E;
+    --card:#FFFFFF;
+    --border:#E2E7E0;
+    --border-strong:#CDD6CD;
+    --green-900:#122E26;
+    --green-800:#173a2f;
+    --green-600:#216B54;
+    --green-500:#2A7D63;
+    --green-tint:#E5EEE8;
+    --green-tint-2:#D6E4DB;
+    --gold:#C6971F;
+    --gold-soft:#F3E7C4;
+    --danger:#B4442F;
+    --danger-soft:#F6E2DC;
+    --radius:14px;
+    --radius-sm:9px;
+    --shadow:0 1px 2px rgba(18,46,38,.05), 0 8px 24px -14px rgba(18,46,38,.22);
+    --shadow-lg:0 24px 60px -24px rgba(18,46,38,.4);
+    --sans:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.45;
+  }
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit;font-size:.94rem}
+
+  /* ---------- Layout ---------- */
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:246px;flex-shrink:0;
+    background:var(--green-900);
+    color:#DCE7E0;
+    display:flex;flex-direction:column;
+    position:fixed;top:0;left:0;bottom:0;z-index:40;
+    padding:22px 16px 16px;overflow-y:auto;
+  }
+  .brand{display:flex;align-items:baseline;gap:2px;padding:6px 8px 22px;letter-spacing:-.02em}
+  .brand .in{font-family:var(--sans);font-weight:700;font-size:1.55rem;color:#EAF1EC}
+  .brand .admav{font-family:var(--serif);font-weight:600;font-size:1.55rem;color:var(--gold)}
+  .brand .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);align-self:flex-end;margin:0 0 8px 3px}
+  .nav{display:flex;flex-direction:column;gap:3px;margin-top:4px}
+  .nav-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:#6f8579;padding:8px 10px 6px;font-weight:600}
+  .nav a{
+    display:flex;align-items:center;gap:11px;
+    padding:10px 11px;border-radius:10px;
+    color:#B9C9BF;text-decoration:none;font-size:.92rem;font-weight:500;
+    transition:background .15s,color .15s;
+  }
+  .nav a svg{width:19px;height:19px;flex-shrink:0;stroke:currentColor}
+  .nav a:hover{background:rgba(255,255,255,.06);color:#EAF1EC}
+  .nav a.active{background:var(--green-600);color:#fff}
+  .nav a.active svg{stroke:var(--gold)}
+  .nav a .pill{margin-left:auto;background:var(--gold);color:var(--green-900);font-size:.68rem;font-weight:700;padding:1px 7px;border-radius:20px}
+  .side-foot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
+  .church-chip{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px}
+  .church-chip .seal{width:34px;height:34px;border-radius:9px;background:var(--gold);color:var(--green-900);display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:1rem}
+  .church-chip .meta{font-size:.8rem;line-height:1.2}
+  .church-chip .meta b{color:#EAF1EC;font-weight:600;display:block}
+  .church-chip .meta span{color:#7f948a}
+  .config-btn{margin-top:8px;width:100%;background:transparent;border:1px solid rgba(255,255,255,.12);color:#9db0a4;padding:8px;border-radius:9px;font-size:.8rem;transition:.15s}
+  .config-btn:hover{background:rgba(255,255,255,.06);color:#cfe}
+
+  .main{flex:1;margin-left:246px;min-width:0}
+  .topbar{
+    position:sticky;top:0;z-index:30;
+    background:rgba(241,244,240,.86);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+    padding:16px 30px;display:flex;align-items:center;gap:18px;
+  }
+  .hamburger{display:none;background:var(--card);border:1px solid var(--border);border-radius:9px;width:40px;height:40px;place-items:center}
+  .hamburger svg{width:20px;height:20px;stroke:var(--ink)}
+  .page-title{font-family:var(--serif);font-size:1.5rem;font-weight:600;letter-spacing:-.01em;flex:1;min-width:0}
+  .search{position:relative;display:flex;align-items:center}
+  .search svg{position:absolute;left:11px;width:16px;height:16px;stroke:var(--muted)}
+  .search input{
+    width:210px;padding:9px 12px 9px 34px;border:1px solid var(--border);
+    background:var(--card);border-radius:10px;outline:none;color:var(--ink);
+  }
+  .search input:focus{border-color:var(--green-500);box-shadow:0 0 0 3px var(--green-tint)}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--green-600);color:#fff;border:none;
+    padding:10px 15px;border-radius:10px;font-weight:600;font-size:.9rem;
+    transition:background .15s,transform .05s;white-space:nowrap;
+  }
+  .btn svg{width:16px;height:16px;stroke:currentColor}
+  .btn:hover{background:var(--green-800)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--border-strong)}
+  .btn.ghost:hover{background:var(--green-tint)}
+  .btn.danger{background:var(--danger)}
+  .btn.danger:hover{background:#963320}
+  .btn.sm{padding:7px 11px;font-size:.83rem}
+  .btn.block{width:100%;justify-content:center}
+
+  .content{padding:26px 30px 60px;max-width:1160px}
+  .view{animation:rise .28s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- Dashboard ---------- */
+  .greeting{margin-bottom:22px}
+  .greeting h2{font-family:var(--serif);font-weight:500;font-size:1.7rem;letter-spacing:-.01em}
+  .greeting p{color:var(--muted);font-size:.94rem;margin-top:2px}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+  .stat{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px 18px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow);
+  }
+  .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green-500)}
+  .stat.gold::before{background:var(--gold)}
+  .stat .label{font-size:.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:7px}
+  .stat .label svg{width:15px;height:15px;stroke:var(--green-600)}
+  .stat.gold .label svg{stroke:var(--gold)}
+  .stat .value{font-family:var(--serif);font-size:2.05rem;font-weight:600;letter-spacing:-.02em;margin-top:8px;line-height:1}
+  .stat .sub{font-size:.82rem;color:var(--muted);margin-top:6px}
+  .stat .sub b{color:var(--green-600);font-weight:600}
+  .stat .sub b.neg{color:var(--danger)}
+
+  .panel-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+  .panel-head h3{font-size:1rem;font-weight:600;letter-spacing:-.01em}
+  .panel-head a{font-size:.82rem;color:var(--green-600);text-decoration:none;font-weight:600;cursor:pointer}
+  .panel-body{padding:6px 8px 8px}
+
+  .row-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;transition:background .12s}
+  .row-item:hover{background:var(--green-tint)}
+  .avatar{width:38px;height:38px;border-radius:10px;background:var(--green-tint-2);color:var(--green-800);display:grid;place-items:center;font-weight:600;font-size:.9rem;flex-shrink:0}
+  .avatar.gold{background:var(--gold-soft);color:#8a6a10}
+  .avatar svg{width:18px;height:18px;stroke:currentColor}
+  .ri-main{flex:1;min-width:0}
+  .ri-main b{font-weight:600;font-size:.92rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ri-main span{font-size:.8rem;color:var(--muted)}
+  .ri-side{font-size:.82rem;color:var(--muted);text-align:right;flex-shrink:0}
+  .tag{display:inline-block;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--green-tint);color:var(--green-800)}
+  .tag.gold{background:var(--gold-soft);color:#8a6a10}
+  .tag.grey{background:#EEF1EE;color:var(--muted)}
+  .tag.novo{background:var(--gold);color:var(--green-900)}
+  .tag.cargo{background:var(--green-900);color:#EAF1EC}
+
+  /* ---------- Banner de pendências ---------- */
+  .banner{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:var(--gold-soft);border:1px solid #E6D19B;border-radius:var(--radius);
+    padding:14px 18px;margin-bottom:20px;
+  }
+  .banner svg{width:20px;height:20px;stroke:#8a6a10;flex-shrink:0}
+  .banner .bt{flex:1;min-width:200px;font-size:.9rem;color:#6b530c}
+  .banner .bt b{font-weight:700}
+
+  /* ---------- Abas de cargo ---------- */
+  .tabs{display:flex;gap:4px;padding:12px 16px 0;flex-wrap:wrap;border-bottom:1px solid var(--border);background:#FAFBFA}
+  .tabs button{
+    background:transparent;border:none;border-bottom:2px solid transparent;
+    padding:9px 13px 11px;font-size:.88rem;font-weight:600;color:var(--muted);
+    border-radius:8px 8px 0 0;transition:.14s;display:inline-flex;align-items:center;gap:7px;
+  }
+  .tabs button:hover{background:var(--green-tint);color:var(--green-800)}
+  .tabs button.active{color:var(--green-800);border-bottom-color:var(--green-600);background:var(--card)}
+  .tabs button .n{background:var(--green-tint-2);color:var(--green-800);font-size:.72rem;padding:1px 7px;border-radius:20px;font-weight:700}
+  .tabs button.active .n{background:var(--green-600);color:#fff}
+  .tabs button.alert .n{background:var(--gold);color:var(--green-900)}
+
+  /* ---------- Tabelas / listas ---------- */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .list-toolbar{padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .list-toolbar .count{font-size:.85rem;color:var(--muted);margin-right:auto}
+  .list-toolbar .count b{color:var(--ink);font-weight:600}
+  table{width:100%;border-collapse:collapse}
+  thead th{text-align:left;font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:12px 16px;border-bottom:1px solid var(--border);background:#FAFBFA}
+  tbody td{padding:13px 16px;border-bottom:1px solid var(--border);font-size:.9rem;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:#FAFBFA}
+  .cell-name{display:flex;align-items:center;gap:11px}
+  .cell-name b{font-weight:600}
+  .cell-name span{font-size:.8rem;color:var(--muted)}
+  .linkname{cursor:pointer;text-align:left;background:none;border:none;padding:0;font:inherit;color:inherit}
+  .linkname b{border-bottom:1px solid transparent;transition:.14s}
+  .linkname:hover b{color:var(--green-600);border-bottom-color:var(--green-500)}
+  .actions-cell{text-align:right;white-space:nowrap}
+  .icon-btn{background:transparent;border:1px solid transparent;border-radius:8px;padding:6px;transition:.12s}
+  .icon-btn svg{width:16px;height:16px;stroke:var(--muted);display:block}
+  .icon-btn:hover{background:var(--green-tint)}
+  .icon-btn:hover svg{stroke:var(--green-800)}
+  .icon-btn.del:hover{background:var(--danger-soft)}
+  .icon-btn.del:hover svg{stroke:var(--danger)}
+  .money{font-variant-numeric:tabular-nums;font-weight:600}
+  .money.in{color:var(--green-600)}
+  .money.out{color:var(--danger)}
+
+  .empty{padding:52px 20px;text-align:center;color:var(--muted)}
+  .empty svg{width:40px;height:40px;stroke:var(--border-strong);margin-bottom:12px}
+  .empty h4{font-family:var(--serif);font-size:1.15rem;color:var(--ink);font-weight:500;margin-bottom:4px}
+  .empty p{font-size:.9rem;margin-bottom:16px}
+
+  /* ---------- Ficha individual ---------- */
+  .back-link{display:inline-flex;align-items:center;gap:7px;background:none;border:none;color:var(--green-600);font-weight:600;font-size:.88rem;padding:0;margin-bottom:16px}
+  .back-link svg{width:16px;height:16px;stroke:currentColor}
+  .back-link:hover{text-decoration:underline}
+  .ficha-head{display:flex;align-items:center;gap:18px;padding:24px 24px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .ficha-head .big-avatar{
+    width:72px;height:72px;border-radius:18px;background:var(--green-900);color:var(--gold);
+    display:grid;place-items:center;font-family:var(--serif);font-weight:600;font-size:1.7rem;flex-shrink:0;
+  }
+  .ficha-head .fh-main{flex:1;min-width:200px}
+  .ficha-head h2{font-family:var(--serif);font-size:1.55rem;font-weight:600;letter-spacing:-.01em;line-height:1.15}
+  .ficha-head .fh-tags{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+  .ficha-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .ficha-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
+  .fg-item{padding:16px 24px;border-bottom:1px solid var(--border)}
+  .fg-item:nth-child(odd){border-right:1px solid var(--border)}
+  .fg-item .k{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:5px}
+  .fg-item .v{font-size:.98rem;font-weight:500}
+  .fg-item .v.empty-v{color:var(--border-strong);font-weight:400}
+  .fg-item a{color:var(--green-600);text-decoration:none;font-weight:600}
+  .fg-item a:hover{text-decoration:underline}
+  .fg-item.full{grid-column:1/-1;border-right:none}
+
+  /* ---------- Aniversariantes ---------- */
+  .month-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .month-nav{display:flex;align-items:center;gap:2px;background:var(--card);border:1px solid var(--border-strong);border-radius:12px;padding:4px}
+  .month-nav button{background:none;border:none;padding:7px 9px;border-radius:8px;display:grid;place-items:center;transition:.12s}
+  .month-nav button svg{width:17px;height:17px;stroke:var(--ink)}
+  .month-nav button:hover{background:var(--green-tint)}
+  .month-nav .mlabel{font-family:var(--serif);font-size:1.15rem;font-weight:600;padding:0 14px;min-width:170px;text-align:center;text-transform:capitalize}
+  .month-bar .spacer{flex:1}
+  .month-bar select{padding:9px 12px;border:1px solid var(--border-strong);border-radius:10px;background:var(--card);outline:none}
+  .aniv-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding:16px}
+  .aniv-card{
+    display:flex;align-items:center;gap:14px;padding:13px 15px;
+    background:#FAFBFA;border:1px solid var(--border);border-radius:12px;transition:.14s;
+  }
+  .aniv-card:hover{border-color:var(--green-500);background:var(--green-tint)}
+  .aniv-card.hoje{border-color:var(--gold);background:var(--gold-soft)}
+  .aniv-day{
+    width:52px;height:56px;border-radius:11px;background:var(--green-900);color:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;line-height:1;
+  }
+  .aniv-day b{font-family:var(--serif);font-size:1.5rem;font-weight:600}
+  .aniv-day span{font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-top:3px}
+  .aniv-card.hoje .aniv-day{background:var(--gold);color:var(--green-900)}
+  .aniv-card.hoje .aniv-day span{color:var(--green-900)}
+  .aniv-info{flex:1;min-width:0}
+  .aniv-info b{display:block;font-weight:600;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .aniv-info span{font-size:.8rem;color:var(--muted)}
+  .aniv-zap{width:34px;height:34px;border-radius:9px;border:1px solid var(--border-strong);background:var(--card);display:grid;place-items:center;flex-shrink:0;text-decoration:none}
+  .aniv-zap svg{width:16px;height:16px;stroke:var(--green-600)}
+  .aniv-zap:hover{background:var(--green-600);border-color:var(--green-600)}
+  .aniv-zap:hover svg{stroke:#fff}
+
+  /* ---------- Modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(18,46,38,.42);backdrop-filter:blur(3px);z-index:60;display:grid;place-items:center;padding:20px;animation:fade .18s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal{background:var(--card);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:480px;max-height:90vh;overflow:auto;animation:pop .22s cubic-bezier(.2,.9,.3,1.2)}
+  @keyframes pop{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+  .modal-head{padding:20px 22px 4px}
+  .modal-head h3{font-family:var(--serif);font-size:1.3rem;font-weight:600;letter-spacing:-.01em}
+  .modal-head p{color:var(--muted);font-size:.86rem;margin-top:2px}
+  .modal-body{padding:16px 22px 8px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:.82rem;font-weight:600;margin-bottom:6px;color:#3c463f}
+  .field .hint{font-weight:400;color:var(--muted);font-size:.78rem}
+  .field input,.field select,.field textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--border-strong);border-radius:10px;
+    outline:none;background:var(--card);color:var(--ink);transition:.14s;
+  }
+  .field textarea{min-height:74px;resize:vertical}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green-500);box-shadow:0 0 0 3px var(--green-tint)}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field-row.three{grid-template-columns:.9fr 1.4fr 1fr}
+  .modal-foot{padding:10px 22px 20px;display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--card)}
+  .config-list .opt{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+  .config-list .opt b{font-size:.92rem;display:block;margin-bottom:3px}
+  .config-list .opt p{font-size:.83rem;color:var(--muted);margin-bottom:10px}
+  .link-box{display:flex;gap:8px;align-items:center}
+  .link-box input{flex:1;min-width:0;font-size:.8rem;padding:8px 10px;border:1px solid var(--border-strong);border-radius:9px;background:#FAFBFA;color:var(--muted)}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translate(-50%,120%);
+    background:var(--green-900);color:#EAF1EC;padding:12px 20px;border-radius:12px;
+    font-size:.9rem;font-weight:500;box-shadow:var(--shadow-lg);z-index:90;
+    display:flex;align-items:center;gap:9px;transition:transform .3s cubic-bezier(.2,.9,.3,1.2);
+  }
+  .toast svg{width:17px;height:17px;stroke:var(--gold)}
+  .toast.show{transform:translate(-50%,0)}
+
+  /* ---------- Formulário público de cadastro ---------- */
+  .formpage{min-height:100vh;background:var(--green-900);display:none}
+  body.form-mode .app{display:none}
+  body.form-mode .formpage{display:block}
+  .fp-wrap{max-width:560px;margin:0 auto;padding:34px 18px 60px}
+  .fp-brand{display:flex;align-items:baseline;gap:2px;justify-content:center;margin-bottom:10px}
+  .fp-brand .in{font-weight:700;font-size:1.7rem;color:#EAF1EC}
+  .fp-brand .admav{font-family:var(--serif);font-weight:600;font-size:1.7rem;color:var(--gold)}
+  .fp-title{text-align:center;color:#EAF1EC;margin-bottom:26px}
+  .fp-title h1{font-family:var(--serif);font-size:1.6rem;font-weight:500;letter-spacing:-.01em;margin-bottom:6px}
+  .fp-title p{color:#9db0a4;font-size:.92rem;line-height:1.5}
+  .fp-card{background:var(--card);border-radius:20px;box-shadow:var(--shadow-lg);padding:26px 24px 24px}
+  .fp-card .field input,.fp-card .field select{padding:12px 13px;font-size:1rem}
+  .fp-sep{display:flex;align-items:center;gap:12px;margin:22px 0 16px;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;font-weight:600}
+  .fp-sep::before,.fp-sep::after{content:"";height:1px;background:var(--border);flex:1}
+  .fp-foot{text-align:center;color:#6f8579;font-size:.78rem;margin-top:20px;line-height:1.6}
+  .fp-done{text-align:center;padding:30px 10px}
+  .fp-done .check{width:66px;height:66px;border-radius:50%;background:var(--green-tint);display:grid;place-items:center;margin:0 auto 18px}
+  .fp-done .check svg{width:32px;height:32px;stroke:var(--green-600);stroke-width:2.5}
+  .fp-done h2{font-family:var(--serif);font-size:1.5rem;font-weight:600;margin-bottom:8px}
+  .fp-done p{color:var(--muted);font-size:.95rem;margin-bottom:22px;line-height:1.5}
+
+  /* ---------- Impressão ---------- */
+  .print-head{display:none}
+  @media print{
+    body{background:#fff}
+    .sidebar,.topbar,.scrim,#modalRoot,.toast,.no-print,.month-bar,.tabs,.list-toolbar,.back-link{display:none!important}
+    .main{margin-left:0}
+    .content{padding:0;max-width:none}
+    .card,.panel{box-shadow:none;border:1px solid #bbb;break-inside:avoid}
+    .print-head{display:block;margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid #122E26}
+    .print-head h1{font-family:var(--serif);font-size:1.5rem;font-weight:600}
+    .print-head p{font-size:.85rem;color:#555;margin-top:3px}
+    .aniv-list{grid-template-columns:repeat(2,1fr);gap:8px;padding:12px}
+    .aniv-card{background:#fff!important;border:1px solid #ccc!important}
+    .aniv-zap,.ficha-actions{display:none}
+    a[href]::after{content:""}
+  }
+
+  /* ---------- Responsivo ---------- */
+  .scrim{display:none}
+  @media (max-width:1080px){
+    .stat-grid{grid-template-columns:repeat(2,1fr)}
+    .panel-grid{grid-template-columns:1fr}
+  }
+  @media (max-width:860px){
+    .sidebar{transform:translateX(-100%);transition:transform .25s ease}
+    .sidebar.open{transform:none}
+    .main{margin-left:0}
+    .hamburger{display:grid}
+    .scrim{display:block;position:fixed;inset:0;background:rgba(18,46,38,.4);z-index:35;opacity:0;pointer-events:none;transition:opacity .25s}
+    .scrim.show{opacity:1;pointer-events:auto}
+    .topbar{padding:13px 16px;gap:12px}
+    .content{padding:20px 16px 60px}
+    .hide-sm{display:none!important}
+    .stat-grid{grid-template-columns:1fr;gap:12px}
+    .ficha-grid{grid-template-columns:1fr}
+    .fg-item:nth-child(odd){border-right:none}
+    .field-row,.field-row.three{grid-template-columns:1fr}
+    .aniv-list{grid-template-columns:1fr}
+    .month-nav .mlabel{min-width:120px;font-size:1rem}
+  }
+  @media (max-width:560px){
+    .page-title{font-size:1.2rem}
+    .month-bar .btn{flex:1}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><span class="in">in</span><span class="admav">Admav</span><span class="dot"></span></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div class="church-chip">
+        <div class="seal">A</div>
+        <div class="meta"><b>Igreja ADMAV</b><span>Sede &bull; Painel admin</span></div>
+      </div>
+      <button class="config-btn" id="openConfig">Configurações e dados</button>
+    </div>
+  </aside>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- Main -->
+  <main class="main">
+    <header class="topbar">
+      <button class="hamburger" id="hamburger" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <h1 class="page-title" id="pageTitle">Painel</h1>
+      <div class="search hide-sm" id="searchWrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar..." />
+      </div>
+      <button class="btn" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span id="addLabel">Novo</span></button>
+    </header>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<!-- Formulário público de cadastro (#cadastro) -->
+<div class="formpage" id="formPage"></div>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg><span id="toastMsg"></span></div>
+
+<script>
+/* ============ Storage (localStorage -> window.storage -> memória) ============ */
+const _mem = {};
+const LS = (() => {
+  try { const t='__inadmav_test'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return localStorage; }
+  catch(e){ return null; }
+})();
+const store = LS ? {
+  get: async k => { const v = LS.getItem(k); return v==null ? null : {key:k, value:v}; },
+  set: async (k,v) => { LS.setItem(k,v); return {key:k, value:v}; }
+} : (typeof window!=='undefined' && window.storage) ? window.storage : {
+  get: async k => (k in _mem ? {key:k, value:_mem[k]} : null),
+  set: async (k,v) => { _mem[k]=v; return {key:k,value:v}; }
+};
+async function load(key, fallback){
+  try{ const r = await store.get(key); return (r && r.value!=null) ? JSON.parse(r.value) : fallback; }
+  catch(e){ return fallback; }
+}
+async function save(key, val){
+  try{ await store.set(key, JSON.stringify(val)); }
+  catch(e){ console.error('save falhou', e); }
+}
+const K = {mem:'inadmav:membros', cel:'inadmav:celulas', ev:'inadmav:eventos', fin:'inadmav:financeiro', seed:'inadmav:seeded'};
+
+/* ===================================================================
+   CARGOS — AJUSTE AQUI a nomenclatura conforme a ADMAV.
+   Cada grupo vira uma aba na tela de Pessoas.
+   Quem não tem cargo cai automaticamente no grupo "membresia".
+   =================================================================== */
+const GRUPOS = [
+  {id:'ministerio',  aba:'Ministros',    cargos:['Pastor','Pastora','Evangelista','Presbítero']},
+  {id:'diaconato',   aba:'Diáconos',     cargos:['Diácono','Diaconisa']},
+  {id:'cooperacao',  aba:'Cooperadores', cargos:['Cooperador','Cooperadora','Auxiliar','Líder de célula']},
+  {id:'membresia',   aba:'Membros',      cargos:[]}
+];
+function grupoDe(cargo){
+  if(!cargo) return 'membresia';
+  const g = GRUPOS.find(g => g.cargos.includes(cargo));
+  return g ? g.id : 'membresia';
+}
+function abaDe(id){ const g = GRUPOS.find(x=>x.id===id); return g ? g.aba : id; }
+
+/* ============ Estado ============ */
+let db = { membros:[], celulas:[], eventos:[], financeiro:[] };
+let currentView = 'painel';
+let searchTerm = '';
+let pessoaTab = 'todos';          // aba de cargo ativa
+let currentPessoaId = null;        // ficha aberta
+let anivRef = (() => { const d = new Date(); d.setDate(1); return d; })();
+let anivGrupo = 'todos';
+
+/* ============ Utils ============ */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const brl = n => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n||0);
+const esc = s => (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initials = name => (name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const todayISO = () => new Date().toISOString().slice(0,10);
+const monthKey = iso => (iso||'').slice(0,7);
+function fmtDate(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+function fmtDateLong(iso){
+  if(!iso) return '—';
+  const dt = new Date(iso+'T00:00:00');
+  return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+}
+const DIAS = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+
+/* ---- Nascimento: 'AAAA-MM-DD'. Ano '0000' = não informado ---- */
+function nascPartes(iso){
+  if(!iso) return null;
+  const p = String(iso).split('-');
+  if(p.length!==3) return null;
+  const a = Number(p[0])||0, m = Number(p[1]), d = Number(p[2]);
+  if(!m || !d) return null;
+  return {a, m, d};
+}
+function fmtNasc(iso){
+  const p = nascPartes(iso); if(!p) return '';
+  const dd = String(p.d).padStart(2,'0'), mm = String(p.m).padStart(2,'0');
+  return p.a ? `${dd}/${mm}/${p.a}` : `${dd}/${mm}`;
+}
+function idadeQueFaz(iso, ano){ const p = nascPartes(iso); return (p && p.a) ? ano - p.a : null; }
+function idadeAtual(iso){
+  const p = nascPartes(iso); if(!p || !p.a) return null;
+  const h = new Date(); let i = h.getFullYear() - p.a;
+  if(h.getMonth()+1 < p.m || (h.getMonth()+1===p.m && h.getDate() < p.d)) i--;
+  return i;
+}
+function zapLink(tel){
+  const d = (tel||'').replace(/\D/g,'');
+  if(d.length < 10) return null;
+  return 'https://wa.me/' + (d.length>=12 && d.startsWith('55') ? d : '55'+d);
+}
+const pendentes = () => db.membros.filter(m => m.origem==='formulario' && !m.revisado);
+
+/* ============ Ícones ============ */
+const IC = {
+  painel:'<path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>',
+  pessoas:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  aniversariantes:'<path d="M3 21h18M5 21v-8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v8"/><path d="M8 10V7.5M12 10V6.5M16 10V7.5"/><circle cx="8" cy="5" r="1"/><circle cx="12" cy="4" r="1"/><circle cx="16" cy="5" r="1"/>',
+  celulas:'<circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M12 7.5v4M10 13l-3 3M14 13l3 3"/>',
+  eventos:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  financeiro:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+  edit:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/>',
+  trash:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.5-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.6 2.6.7a2 2 0 0 1 1.7 2z"/>',
+  people:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>',
+  wallet:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+  cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  cargo:'<path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/>',
+  chevL:'<path d="m15 18-6-6 6-6"/>',
+  chevR:'<path d="m9 18 6-6-6-6"/>',
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  print:'<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/>',
+  arrowL:'<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/>',
+  form:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 13h6M9 17h4"/>',
+  alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.5z"/>'
+};
+const svg = (path,cls='') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+
+/* ============ Navegação ============ */
+const NAV = [
+  {id:'painel',          label:'Painel',          add:'',                  title:'Painel'},
+  {id:'pessoas',         label:'Pessoas',         add:'Nova pessoa',       title:'Pessoas'},
+  {id:'aniversariantes', label:'Aniversariantes', add:'',                  title:'Aniversariantes'},
+  {id:'celulas',         label:'Células',         add:'Nova célula',       title:'Células'},
+  {id:'eventos',         label:'Eventos',         add:'Novo evento',       title:'Eventos'},
+  {id:'financeiro',      label:'Financeiro',      add:'Novo lançamento',   title:'Financeiro'}
+];
+function buildNav(){
+  const nav = document.getElementById('nav');
+  const np = pendentes().length;
+  nav.innerHTML = '<span class="nav-label">Gestão</span>' + NAV.map(n => {
+    const active = n.id===currentView || (currentView==='ficha' && n.id==='pessoas');
+    const pill = (n.id==='pessoas' && np) ? `<span class="pill">${np}</span>` : '';
+    return `<a data-view="${n.id}" class="${active?'active':''}">${svg(IC[n.id])}${n.label}${pill}</a>`;
+  }).join('');
+  nav.querySelectorAll('a').forEach(a => a.onclick = () => setView(a.dataset.view));
+}
+function setView(v){
+  currentView = v; searchTerm='';
+  if(v!=='ficha') currentPessoaId = null;
+  const meta = NAV.find(n=>n.id===v);
+  const addBtn = document.getElementById('addBtn');
+  const searchWrap = document.getElementById('searchWrap');
+  const semAdd = ['painel','aniversariantes','ficha'];
+  const comBusca = ['pessoas','celulas'];
+
+  document.getElementById('pageTitle').textContent =
+    v==='ficha' ? (db.membros.find(m=>m.id===currentPessoaId)?.nome || 'Ficha') : (meta ? meta.title : 'Painel');
+
+  addBtn.style.display = semAdd.includes(v) ? 'none' : '';
+  if(meta && meta.add) document.getElementById('addLabel').textContent = meta.add;
+  searchWrap.style.display = comBusca.includes(v) ? '' : 'none';
+  document.getElementById('searchInput').value='';
+  buildNav();
+  render();
+  closeDrawer();
+  window.scrollTo({top:0});
+}
+function abrirFicha(id){ currentPessoaId = id; setView('ficha'); }
+
+/* ============ Render principal ============ */
+function render(){
+  const el = document.getElementById('content');
+  el.innerHTML = '';
+  const view = document.createElement('div');
+  view.className = 'view';
+  const fn = {
+    painel: renderPainel, pessoas: renderPessoas, ficha: renderFicha,
+    aniversariantes: renderAniversariantes, celulas: renderCelulas,
+    eventos: renderEventos, financeiro: renderFinanceiro
+  }[currentView] || renderPainel;
+  view.innerHTML = fn();
+  el.appendChild(view);
+  wireView();
+}
+
+/* -------- Painel -------- */
+function financeMonth(mk){
+  let inc=0, out=0;
+  db.financeiro.filter(f=>monthKey(f.data)===mk).forEach(f=>{
+    if(f.tipo==='saida') out+=Number(f.valor)||0; else inc+=Number(f.valor)||0;
+  });
+  return {inc,out,saldo:inc-out};
+}
+function bannerPendentes(){
+  const p = pendentes();
+  if(!p.length) return '';
+  return `<div class="banner no-print">
+    ${svg(IC.alert)}
+    <div class="bt"><b>${p.length} ${p.length===1?'cadastro novo':'cadastros novos'}</b> ${p.length===1?'chegou':'chegaram'} pelo formulário e ${p.length===1?'aguarda':'aguardam'} conferência.</div>
+    <button class="btn sm" data-ver-novos>Conferir agora</button>
+  </div>`;
+}
+function renderPainel(){
+  const hora = new Date().getHours();
+  const saud = hora<12?'Bom dia':hora<18?'Boa tarde':'Boa noite';
+  const membros = db.membros.filter(m=>m.tipo==='Membro').length;
+  const visitantes = db.membros.filter(m=>m.tipo==='Visitante').length;
+  const obreiros = db.membros.filter(m=>m.cargo).length;
+  const porGrupo = GRUPOS.filter(g=>g.cargos.length).map(g =>
+    `${db.membros.filter(m=>grupoDe(m.cargo)===g.id).length} ${g.aba.toLowerCase()}`
+  ).join(' • ');
+
+  const mesAtual = new Date().getMonth()+1;
+  const aniv = aniversariantesDe(mesAtual);
+  const nomeMesAtual = MESES[mesAtual-1];
+  const hojeDia = new Date().getDate();
+  const proxAniv = aniv.find(m => nascPartes(m.nascimento).d >= hojeDia) || aniv[0];
+
+  const mk = monthKey(todayISO());
+  const fin = financeMonth(mk);
+  const proximos = db.eventos.filter(e=>e.data>=todayISO()).sort((a,b)=>a.data.localeCompare(b.data));
+
+  return `
+    <div class="greeting">
+      <h2>${saud}, Pr. líder 👋</h2>
+      <p>Aqui está o resumo da Igreja ADMAV — ${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}.</p>
+    </div>
+    ${bannerPendentes()}
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="label">${svg(IC.people)} Pessoas</div>
+        <div class="value">${db.membros.length}</div>
+        <div class="sub">${membros} membros • <b>${visitantes}</b> visitantes</div>
+      </div>
+      <div class="stat">
+        <div class="label">${svg(IC.cargo)} Obreiros</div>
+        <div class="value">${obreiros}</div>
+        <div class="sub">${porGrupo || 'Nenhum cargo atribuído'}</div>
+      </div>
+      <div class="stat gold">
+        <div class="label">${svg(IC.aniversariantes)} Aniversariantes de ${nomeMesAtual}</div>
+        <div class="value">${aniv.length}</div>
+        <div class="sub">${proxAniv ? 'Próximo: dia '+nascPartes(proxAniv.nascimento).d+' — '+esc(proxAniv.nome.split(' ')[0]) : 'Nenhum neste mês'}</div>
+      </div>
+      <div class="stat gold">
+        <div class="label">${svg(IC.wallet)} Entradas de ${nomeMesAtual}</div>
+        <div class="value" style="font-size:1.5rem;margin-top:10px">${brl(fin.inc)}</div>
+        <div class="sub">Saídas ${brl(fin.out)} • saldo <b class="${fin.saldo<0?'neg':''}">${brl(fin.saldo)}</b></div>
+      </div>
+    </div>
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-head"><h3>Aniversariantes de ${cap(nomeMesAtual)}</h3><a data-go="aniversariantes">Ver lista</a></div>
+        <div class="panel-body">
+          ${aniv.length ? aniv.slice(0,6).map(m=>{
+            const p = nascPartes(m.nascimento);
+            const id = idadeQueFaz(m.nascimento, new Date().getFullYear());
+            return `<div class="row-item">
+              <div class="avatar ${p.d===hojeDia?'gold':''}">${String(p.d).padStart(2,'0')}</div>
+              <div class="ri-main"><b>${esc(m.nome)}</b><span>${m.cargo?esc(m.cargo):esc(m.tipo||'Membro')}</span></div>
+              <div class="ri-side">${id!=null?'faz '+id+' anos':'—'}</div>
+            </div>`;
+          }).join('') + (aniv.length>6?`<div style="padding:8px 12px;font-size:.82rem;color:var(--muted)">+ ${aniv.length-6} ${aniv.length-6===1?'pessoa':'pessoas'}</div>`:'')
+          : emptyMini('Ninguém faz aniversário em '+nomeMesAtual+'.')}
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Próximos eventos</h3><a data-go="eventos">Agenda</a></div>
+        <div class="panel-body">
+          ${proximos.length ? proximos.slice(0,4).map(e=>`
+            <div class="row-item">
+              <div class="avatar gold">${svg(IC.cal)}</div>
+              <div class="ri-main"><b>${esc(e.titulo)}</b><span>${esc(e.local||'Local a definir')}</span></div>
+              <div class="ri-side">${fmtDate(e.data)}<br><span style="font-size:.72rem">${e.inscritos||0} inscritos</span></div>
+            </div>`).join('') : emptyMini('Nenhum evento agendado.')}
+        </div>
+      </div>
+    </div>`;
+}
+function emptyMini(t){ return `<div style="padding:26px 12px;text-align:center;color:var(--muted);font-size:.88rem">${t}</div>`; }
+function celName(id){ const c = db.celulas.find(x=>x.id===id); return c?c.nome:'—'; }
+
+/* -------- Pessoas (com abas por cargo) -------- */
+function pessoasDaAba(aba){
+  if(aba==='todos') return db.membros;
+  if(aba==='novos') return pendentes();
+  return db.membros.filter(m => grupoDe(m.cargo)===aba);
+}
+function renderPessoas(){
+  if(!db.membros.length)
+    return emptyState('pessoas','Nenhuma pessoa cadastrada','Cadastre a membresia da igreja — ou envie o link do formulário para as pessoas preencherem sozinhas.','Nova pessoa');
+
+  const np = pendentes().length;
+  const abas = [{id:'todos', aba:'Todos'}]
+    .concat(GRUPOS.map(g=>({id:g.id, aba:g.aba})))
+    .concat(np ? [{id:'novos', aba:'Novos', alert:true}] : []);
+
+  let list = [...pessoasDaAba(pessoaTab)].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  if(searchTerm){
+    const t = searchTerm.toLowerCase();
+    list = list.filter(m => (m.nome+' '+(m.email||'')+' '+(m.telefone||'')+' '+(m.cargo||'')+' '+(m.endereco||'')).toLowerCase().includes(t));
+  }
+
+  return `
+    <div class="print-head"><h1>${pessoaTab==='todos'?'Membresia — Igreja ADMAV':abaDe(pessoaTab)+' — Igreja ADMAV'}</h1><p>${list.length} ${list.length===1?'pessoa':'pessoas'} • gerado em ${fmtDate(todayISO())}</p></div>
+    <div class="card">
+      <div class="tabs no-print">
+        ${abas.map(a=>`<button data-tab="${a.id}" class="${pessoaTab===a.id?'active':''} ${a.alert?'alert':''}">${a.aba}<span class="n">${pessoasDaAba(a.id).length}</span></button>`).join('')}
+      </div>
+      <div class="list-toolbar">
+        <span class="count"><b>${list.length}</b> ${list.length===1?'pessoa':'pessoas'}${searchTerm?' encontradas':''}</span>
+        ${pessoaTab==='novos' && np ? `<button class="btn ghost sm" data-conferir-todos>${svg(IC.check)}Marcar todos como conferidos</button>` : ''}
+        <button class="btn ghost sm" data-print>${svg(IC.print)}Imprimir</button>
+      </div>
+      ${list.length ? `<table><thead><tr>
+          <th>Nome</th><th class="hide-sm">Cargo</th><th>Nascimento</th><th class="hide-sm">Contato</th><th class="hide-sm">Situação</th><th></th>
+        </tr></thead>
+      <tbody>${list.map(m=>{
+        const novo = m.origem==='formulario' && !m.revisado;
+        return `<tr>
+          <td>
+            <button class="linkname" data-ficha="${m.id}">
+              <div class="cell-name">
+                <div class="avatar">${initials(m.nome)}</div>
+                <div><b>${esc(m.nome)}</b>${novo?' <span class="tag novo">novo</span>':''}<br><span>${m.celulaId?esc(celName(m.celulaId)):'Sem célula'}</span></div>
+              </div>
+            </button>
+          </td>
+          <td class="hide-sm">${m.cargo?`<span class="tag cargo">${esc(m.cargo)}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+          <td>${m.nascimento?fmtNasc(m.nascimento):'<span style="color:var(--muted)">—</span>'}</td>
+          <td class="hide-sm">${m.telefone?esc(m.telefone):'—'}<br><span style="font-size:.8rem;color:var(--muted)">${esc(m.email||'')}</span></td>
+          <td class="hide-sm"><span class="tag ${m.tipo==='Visitante'?'gold':m.tipo==='Congregado'?'grey':''}">${esc(m.tipo||'Membro')}</span></td>
+          <td class="actions-cell no-print">
+            <button class="icon-btn" data-edit="${m.id}" title="Editar">${svg(IC.edit)}</button>
+            <button class="icon-btn del" data-del="${m.id}" title="Remover">${svg(IC.trash)}</button>
+          </td>
+        </tr>`;}).join('')}</tbody></table>`
+      : emptyMini(searchTerm ? 'Nenhum resultado para "'+esc(searchTerm)+'".' : 'Ninguém nesta aba ainda.')}
+    </div>`;
+}
+
+/* -------- Ficha individual -------- */
+function renderFicha(){
+  const m = db.membros.find(x=>x.id===currentPessoaId);
+  if(!m) return emptyState('pessoas','Pessoa não encontrada','O registro pode ter sido removido.','Voltar para Pessoas');
+  const idade = idadeAtual(m.nascimento);
+  const zap = zapLink(m.telefone);
+  const novo = m.origem==='formulario' && !m.revisado;
+  const item = (k,v,full) => `<div class="fg-item ${full?'full':''}"><div class="k">${k}</div><div class="v ${v?'':'empty-v'}">${v||'Não informado'}</div></div>`;
+
+  return `
+    <button class="back-link no-print" data-go="pessoas">${svg(IC.arrowL)}Voltar para Pessoas</button>
+    <div class="print-head"><h1>Ficha — ${esc(m.nome)}</h1><p>Igreja ADMAV • gerado em ${fmtDate(todayISO())}</p></div>
+    ${novo ? `<div class="banner no-print">${svg(IC.alert)}<div class="bt">Cadastro recebido pelo <b>formulário público</b> em ${fmtDate(m.dataCadastro)}. Confira os dados antes de considerar oficial.</div><button class="btn sm" data-conferir="${m.id}">${svg(IC.check)}Marcar como conferido</button></div>` : ''}
+    <div class="card">
+      <div class="ficha-head">
+        <div class="big-avatar">${initials(m.nome)}</div>
+        <div class="fh-main">
+          <h2>${esc(m.nome)}</h2>
+          <div class="fh-tags">
+            ${m.cargo?`<span class="tag cargo">${esc(m.cargo)}</span>`:''}
+            <span class="tag ${m.tipo==='Visitante'?'gold':m.tipo==='Congregado'?'grey':''}">${esc(m.tipo||'Membro')}</span>
+            ${m.celulaId?`<span class="tag">${esc(celName(m.celulaId))}</span>`:''}
+          </div>
+        </div>
+        <div class="ficha-actions no-print">
+          ${zap?`<a class="btn ghost sm" href="${zap}" target="_blank" rel="noopener">${svg(IC.phone)}WhatsApp</a>`:''}
+          <button class="btn ghost sm" data-edit="${m.id}">${svg(IC.edit)}Editar</button>
+          <button class="btn danger sm" data-del="${m.id}">${svg(IC.trash)}Remover</button>
+        </div>
+      </div>
+      <div class="ficha-grid">
+        ${item('Data de nascimento', m.nascimento ? fmtNasc(m.nascimento) + (idade!=null?` <span style="color:var(--muted);font-weight:400">(${idade} anos)</span>`:' <span style="color:var(--muted);font-weight:400">(ano não informado)</span>') : '')}
+        ${item('Cargo', m.cargo ? esc(m.cargo)+` <span style="color:var(--muted);font-weight:400">• ${abaDe(grupoDe(m.cargo))}</span>` : '')}
+        ${item('Telefone', m.telefone ? (zap?`<a href="${zap}" target="_blank" rel="noopener">${esc(m.telefone)}</a>`:esc(m.telefone)) : '')}
+        ${item('E-mail', m.email ? `<a href="mailto:${esc(m.email)}">${esc(m.email)}</a>` : '')}
+        ${item('Endereço', esc(m.endereco||''), true)}
+        ${item('Célula', m.celulaId ? esc(celName(m.celulaId)) : '')}
+        ${item('Situação', esc(m.tipo||'Membro'))}
+        ${item('Cadastrado em', m.dataCadastro ? fmtDate(m.dataCadastro) + (m.origem==='formulario'?' <span style="color:var(--muted);font-weight:400">• via formulário</span>':'') : '')}
+      </div>
+    </div>`;
+}
+
+/* -------- Aniversariantes -------- */
+function aniversariantesDe(mes, grupo){
+  return db.membros.filter(m => {
+    const p = nascPartes(m.nascimento);
+    if(!p || p.m!==mes) return false;
+    if(grupo && grupo!=='todos' && grupoDe(m.cargo)!==grupo) return false;
+    return true;
+  }).sort((a,b) => nascPartes(a.nascimento).d - nascPartes(b.nascimento).d || a.nome.localeCompare(b.nome,'pt-BR'));
+}
+function renderAniversariantes(){
+  const mes = anivRef.getMonth()+1, ano = anivRef.getFullYear();
+  const nomeMes = MESES[mes-1];
+  const list = aniversariantesDe(mes, anivGrupo);
+  const hoje = new Date();
+  const ehMesAtual = (mes===hoje.getMonth()+1 && ano===hoje.getFullYear());
+
+  return `
+    <div class="print-head">
+      <h1>Aniversariantes de ${cap(nomeMes)} de ${ano}</h1>
+      <p>Igreja ADMAV${anivGrupo!=='todos'?' • '+abaDe(anivGrupo):''} • ${list.length} ${list.length===1?'pessoa':'pessoas'}</p>
+    </div>
+    <div class="month-bar no-print">
+      <div class="month-nav">
+        <button data-mes="-1" title="Mês anterior">${svg(IC.chevL)}</button>
+        <span class="mlabel">${nomeMes} de ${ano}</span>
+        <button data-mes="1" title="Próximo mês">${svg(IC.chevR)}</button>
+      </div>
+      ${!ehMesAtual?`<button class="btn ghost sm" data-mes-hoje>Voltar para o mês atual</button>`:''}
+      <div class="spacer"></div>
+      <select id="anivGrupo">
+        <option value="todos" ${anivGrupo==='todos'?'selected':''}>Todos os cargos</option>
+        ${GRUPOS.map(g=>`<option value="${g.id}" ${anivGrupo===g.id?'selected':''}>${g.aba}</option>`).join('')}
+      </select>
+      <button class="btn ghost" data-copiar>${svg(IC.copy)}Copiar lista</button>
+      <button class="btn" data-print>${svg(IC.print)}Imprimir</button>
+    </div>
+    <div class="card">
+      ${list.length ? `<div class="aniv-list">${list.map(m=>{
+        const p = nascPartes(m.nascimento);
+        const idade = idadeQueFaz(m.nascimento, ano);
+        const zap = zapLink(m.telefone);
+        const eHoje = ehMesAtual && p.d===hoje.getDate();
+        return `<div class="aniv-card ${eHoje?'hoje':''}">
+          <div class="aniv-day"><b>${String(p.d).padStart(2,'0')}</b><span>${nomeMes.slice(0,3)}</span></div>
+          <div class="aniv-info">
+            <b>${esc(m.nome)}</b>
+            <span>${idade!=null?`faz ${idade} anos`:'idade não informada'}${m.cargo?' • '+esc(m.cargo):''}${eHoje?' • é hoje!':''}</span>
+          </div>
+          ${zap?`<a class="aniv-zap no-print" href="${zap}" target="_blank" rel="noopener" title="Parabenizar no WhatsApp">${svg(IC.phone)}</a>`:''}
+        </div>`;
+      }).join('')}</div>`
+      : `<div class="empty">${svg(IC.aniversariantes)}<h4>Nenhum aniversariante em ${nomeMes}</h4><p>${anivGrupo!=='todos'?'Tente remover o filtro de cargo.':'Cadastre a data de nascimento das pessoas para essa lista se preencher sozinha.'}</p></div>`}
+    </div>`;
+}
+function textoAniversariantes(){
+  const mes = anivRef.getMonth()+1, ano = anivRef.getFullYear();
+  const list = aniversariantesDe(mes, anivGrupo);
+  if(!list.length) return `Nenhum aniversariante em ${MESES[mes-1]}.`;
+  const cab = `🎂 Aniversariantes de ${cap(MESES[mes-1])}` + (anivGrupo!=='todos'?` — ${abaDe(anivGrupo)}`:'');
+  const linhas = list.map(m=>{
+    const p = nascPartes(m.nascimento);
+    const idade = idadeQueFaz(m.nascimento, ano);
+    return `${String(p.d).padStart(2,'0')}/${String(mes).padStart(2,'0')} — ${m.nome}` + (idade!=null?` (${idade} anos)`:'');
+  });
+  return cab + '\n' + '─'.repeat(28) + '\n' + linhas.join('\n');
+}
+async function copiarTexto(txt){
+  try{
+    if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(txt); return true; }
+  }catch(e){}
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+
+/* -------- Células -------- */
+function renderCelulas(){
+  let list = [...db.celulas].sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+  if(searchTerm){ const t=searchTerm.toLowerCase(); list=list.filter(c=>(c.nome+' '+(c.lider||'')).toLowerCase().includes(t)); }
+  if(!db.celulas.length) return emptyState('celulas','Nenhuma célula ainda','Crie células e pequenos grupos para organizar o cuidado e o discipulado.','Nova célula');
+  return `
+    <div class="card">
+      <div class="list-toolbar"><span class="count"><b>${list.length}</b> ${list.length===1?'célula':'células'}</span></div>
+      ${list.length? `<table><thead><tr><th>Célula</th><th>Líder</th><th class="hide-sm">Encontro</th><th>Membros</th><th></th></tr></thead>
+      <tbody>${list.map(c=>{
+        const qtd = db.membros.filter(m=>m.celulaId===c.id).length;
+        return `<tr>
+          <td><div class="cell-name"><div class="avatar">${svg(IC.celulas)}</div><div><b>${esc(c.nome)}</b><br><span>${esc(c.endereco||'Local não informado')}</span></div></div></td>
+          <td>${esc(c.lider||'—')}</td>
+          <td class="hide-sm">${c.diaSemana!=null?DIAS[c.diaSemana]:'—'}</td>
+          <td><span class="tag">${qtd} ${qtd===1?'pessoa':'pessoas'}</span></td>
+          <td class="actions-cell">
+            <button class="icon-btn" data-edit="${c.id}">${svg(IC.edit)}</button>
+            <button class="icon-btn del" data-del="${c.id}">${svg(IC.trash)}</button>
+          </td>
+        </tr>`;}).join('')}</tbody></table>`
+      : emptyMini('Nenhum resultado para "'+esc(searchTerm)+'".')}
+    </div>`;
+}
+
+/* -------- Eventos -------- */
+function renderEventos(){
+  const list = [...db.eventos].sort((a,b)=>a.data.localeCompare(b.data));
+  if(!list.length) return emptyState('eventos','Nenhum evento ainda','Publique cultos, conferências e programações na agenda da igreja.','Novo evento');
+  const hoje = todayISO();
+  return `
+    <div class="card">
+      <div class="list-toolbar"><span class="count"><b>${list.length}</b> ${list.length===1?'evento':'eventos'} na agenda</span></div>
+      <table><thead><tr><th>Evento</th><th class="hide-sm">Local</th><th>Data</th><th>Inscritos</th><th></th></tr></thead>
+      <tbody>${list.map(e=>`
+        <tr style="${e.data<hoje?'opacity:.6':''}">
+          <td><div class="cell-name"><div class="avatar gold">${svg(IC.cal)}</div><div><b>${esc(e.titulo)}</b><br><span>${esc((e.descricao||'').slice(0,44))}${(e.descricao||'').length>44?'…':''}</span></div></div></td>
+          <td class="hide-sm">${esc(e.local||'—')}</td>
+          <td>${fmtDate(e.data)}${e.data<hoje?'<br><span class="tag grey" style="font-size:.68rem">Realizado</span>':''}</td>
+          <td>
+            <span class="tag gold">${e.inscritos||0}</span>
+            <button class="icon-btn" data-insc="${e.id}" title="Adicionar inscrito">${svg('<path d="M12 5v14M5 12h14"/>')}</button>
+          </td>
+          <td class="actions-cell">
+            <button class="icon-btn" data-edit="${e.id}">${svg(IC.edit)}</button>
+            <button class="icon-btn del" data-del="${e.id}">${svg(IC.trash)}</button>
+          </td>
+        </tr>`).join('')}</tbody></table>
+    </div>`;
+}
+
+/* -------- Financeiro -------- */
+function renderFinanceiro(){
+  const mk = monthKey(todayISO());
+  const fin = financeMonth(mk);
+  const list = [...db.financeiro].sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const nomeMes = new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const head = `
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat"><div class="label">${svg(IC.wallet)} Entradas • ${nomeMes}</div><div class="value" style="font-size:1.55rem;margin-top:10px;color:var(--green-600)">${brl(fin.inc)}</div><div class="sub">Dízimos, ofertas e outras receitas</div></div>
+      <div class="stat" style="--green-500:var(--danger)"><div class="label" style="color:var(--danger)">${svg('<path d="M12 5v14M5 12h14"/>')} Saídas • ${nomeMes}</div><div class="value" style="font-size:1.55rem;margin-top:10px;color:var(--danger)">${brl(fin.out)}</div><div class="sub">Despesas e pagamentos</div></div>
+      <div class="stat gold"><div class="label">${svg(IC.financeiro)} Saldo do mês</div><div class="value" style="font-size:1.55rem;margin-top:10px">${brl(fin.saldo)}</div><div class="sub">${fin.saldo>=0?'Resultado positivo':'Atenção: negativo'}</div></div>
+    </div>`;
+  if(!db.financeiro.length) return head + emptyState('financeiro','Nenhum lançamento','Registre dízimos, ofertas e despesas para acompanhar as finanças.','Novo lançamento');
+  return head + `
+    <div class="card">
+      <div class="list-toolbar"><span class="count"><b>${list.length}</b> lançamentos</span></div>
+      <table><thead><tr><th>Descrição</th><th>Tipo</th><th class="hide-sm">Categoria</th><th>Data</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+      <tbody>${list.map(f=>{
+        const out = f.tipo==='saida';
+        return `<tr>
+          <td><b>${esc(f.descricao||'Lançamento')}</b></td>
+          <td><span class="tag ${out?'':'gold'}">${labelTipo(f.tipo)}</span></td>
+          <td class="hide-sm">${esc(f.categoria||'—')}</td>
+          <td>${fmtDate(f.data)}</td>
+          <td style="text-align:right"><span class="money ${out?'out':'in'}">${out?'−':'+'} ${brl(f.valor)}</span></td>
+          <td class="actions-cell">
+            <button class="icon-btn" data-edit="${f.id}">${svg(IC.edit)}</button>
+            <button class="icon-btn del" data-del="${f.id}">${svg(IC.trash)}</button>
+          </td>
+        </tr>`;}).join('')}</tbody></table>
+    </div>`;
+}
+function labelTipo(t){ return {dizimo:'Dízimo',oferta:'Oferta',entrada:'Entrada',saida:'Saída'}[t]||t; }
+
+function emptyState(icon,title,desc,btn){
+  return `<div class="card"><div class="empty">${svg(IC[icon])}<h4>${title}</h4><p>${desc}</p><button class="btn" data-add-empty>${svg('<path d="M12 5v14M5 12h14"/>')}${btn}</button></div></div>`;
+}
+
+/* ============ Eventos de UI por view ============ */
+function viewColecao(){ return currentView==='ficha' ? 'pessoas' : currentView; }
+function wireView(){
+  const q = s => document.querySelectorAll(s);
+  q('[data-go]').forEach(a => a.onclick = () => setView(a.dataset.go));
+  q('[data-add-empty]').forEach(b => b.onclick = () => {
+    if(currentView==='ficha') return setView('pessoas');
+    openForm(currentView);
+  });
+  q('[data-edit]').forEach(b => b.onclick = () => openForm(viewColecao(), b.dataset.edit));
+  q('[data-del]').forEach(b => b.onclick = () => confirmDelete(viewColecao(), b.dataset.del));
+  q('[data-insc]').forEach(b => b.onclick = () => addInscrito(b.dataset.insc));
+  q('[data-ficha]').forEach(b => b.onclick = () => abrirFicha(b.dataset.ficha));
+  q('[data-tab]').forEach(b => b.onclick = () => { pessoaTab = b.dataset.tab; render(); });
+  q('[data-print]').forEach(b => b.onclick = () => window.print());
+  q('[data-ver-novos]').forEach(b => b.onclick = () => { pessoaTab='novos'; setView('pessoas'); });
+  q('[data-conferir]').forEach(b => b.onclick = () => marcarConferido(b.dataset.conferir));
+  q('[data-conferir-todos]').forEach(b => b.onclick = () => conferirTodos());
+  q('[data-mes]').forEach(b => b.onclick = () => {
+    anivRef.setMonth(anivRef.getMonth() + Number(b.dataset.mes));
+    render();
+  });
+  q('[data-mes-hoje]').forEach(b => b.onclick = () => { anivRef = new Date(); anivRef.setDate(1); render(); });
+  q('[data-copiar]').forEach(b => b.onclick = async () => {
+    const ok = await copiarTexto(textoAniversariantes());
+    toast(ok ? 'Lista copiada — é só colar no WhatsApp' : 'Não foi possível copiar automaticamente');
+  });
+  const ag = document.getElementById('anivGrupo');
+  if(ag) ag.onchange = () => { anivGrupo = ag.value; render(); };
+}
+function marcarConferido(id){
+  const m = db.membros.find(x=>x.id===id);
+  if(m){ m.revisado = true; persist('pessoas'); buildNav(); render(); toast('Cadastro conferido'); }
+}
+function conferirTodos(){
+  pendentes().forEach(m => m.revisado = true);
+  persist('pessoas'); pessoaTab='todos'; buildNav(); render(); toast('Todos os cadastros foram conferidos');
+}
+
+/* ============ Campos reutilizáveis ============ */
+function campoNascimento(prefix, iso){
+  const p = nascPartes(iso) || {d:0,m:0,a:0};
+  const dias = Array.from({length:31},(_,i)=>i+1);
+  return `<div class="field">
+    <label>Data de nascimento <span class="hint">— o ano é opcional</span></label>
+    <div class="field-row three">
+      <select id="${prefix}_dia"><option value="">Dia</option>${dias.map(d=>`<option value="${d}" ${p.d===d?'selected':''}>${d}</option>`).join('')}</select>
+      <select id="${prefix}_mes"><option value="">Mês</option>${MESES.map((n,i)=>`<option value="${i+1}" ${p.m===i+1?'selected':''}>${cap(n)}</option>`).join('')}</select>
+      <input id="${prefix}_ano" type="text" inputmode="numeric" maxlength="4" placeholder="Ano" value="${p.a?p.a:''}">
+    </div>
+  </div>`;
+}
+function lerNascimento(prefix){
+  const g = id => { const e = document.getElementById(prefix+'_'+id); return e ? e.value.trim() : ''; };
+  const d = g('dia'), m = g('mes'), a = g('ano');
+  if(!d || !m) return '';
+  const ano = /^\d{4}$/.test(a) ? a : '0000';
+  return `${ano}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+function selectCargo(id, atual){
+  return `<select id="${id}"><option value="">Sem cargo (membro)</option>${
+    GRUPOS.filter(g=>g.cargos.length).map(g =>
+      `<optgroup label="${g.aba}">${g.cargos.map(c=>`<option ${atual===c?'selected':''}>${c}</option>`).join('')}</optgroup>`
+    ).join('')
+  }</select>`;
+}
+function selectCelula(id, atual){
+  return `<select id="${id}"><option value="">Nenhuma célula</option>${
+    db.celulas.map(c=>`<option value="${c.id}" ${atual===c.id?'selected':''}>${esc(c.nome)}</option>`).join('')
+  }</select>`;
+}
+
+/* ============ Formulários (modal) ============ */
+function fieldsFor(view, item){
+  item = item || {};
+  if(view==='pessoas') return `
+    <div class="field"><label>Nome completo *</label><input id="f_nome" value="${esc(item.nome||'')}" placeholder="Ex.: Maria Oliveira"></div>
+    <div class="field-row">
+      <div class="field"><label>Cargo</label>${selectCargo('f_cargo', item.cargo)}</div>
+      <div class="field"><label>Situação</label><select id="f_tipo">
+        ${['Membro','Congregado','Visitante'].map(t=>`<option ${item.tipo===t?'selected':''}>${t}</option>`).join('')}
+      </select></div>
+    </div>
+    ${campoNascimento('f', item.nascimento)}
+    <div class="field-row">
+      <div class="field"><label>Telefone</label><input id="f_telefone" value="${esc(item.telefone||'')}" placeholder="(00) 90000-0000"></div>
+      <div class="field"><label>E-mail</label><input type="email" id="f_email" value="${esc(item.email||'')}" placeholder="email@exemplo.com"></div>
+    </div>
+    <div class="field"><label>Endereço</label><input id="f_endereco" value="${esc(item.endereco||'')}" placeholder="Rua, número, bairro, cidade"></div>
+    <div class="field"><label>Célula</label>${selectCelula('f_celulaId', item.celulaId)}</div>`;
+  if(view==='celulas') return `
+    <div class="field"><label>Nome da célula *</label><input id="f_nome" value="${esc(item.nome||'')}" placeholder="Ex.: Célula Vida Nova"></div>
+    <div class="field"><label>Líder</label><input id="f_lider" value="${esc(item.lider||'')}" placeholder="Nome do líder"></div>
+    <div class="field-row">
+      <div class="field"><label>Dia do encontro</label><select id="f_diaSemana">
+        <option value="">—</option>${DIAS.map((d,i)=>`<option value="${i}" ${item.diaSemana===i?'selected':''}>${d}</option>`).join('')}
+      </select></div>
+      <div class="field"><label>Bairro / local</label><input id="f_endereco" value="${esc(item.endereco||'')}" placeholder="Ex.: Centro"></div>
+    </div>`;
+  if(view==='eventos') return `
+    <div class="field"><label>Título do evento *</label><input id="f_titulo" value="${esc(item.titulo||'')}" placeholder="Ex.: Conferência de Jovens"></div>
+    <div class="field-row">
+      <div class="field"><label>Data</label><input type="date" id="f_data" value="${item.data||todayISO()}"></div>
+      <div class="field"><label>Inscritos</label><input type="number" min="0" id="f_inscritos" value="${item.inscritos||0}"></div>
+    </div>
+    <div class="field"><label>Local</label><input id="f_local" value="${esc(item.local||'')}" placeholder="Ex.: Templo sede"></div>
+    <div class="field"><label>Descrição</label><textarea id="f_descricao" placeholder="Detalhes da programação...">${esc(item.descricao||'')}</textarea></div>`;
+  if(view==='financeiro') return `
+    <div class="field-row">
+      <div class="field"><label>Tipo</label><select id="f_tipo">
+        ${[['dizimo','Dízimo'],['oferta','Oferta'],['entrada','Outra entrada'],['saida','Saída / despesa']].map(([v,l])=>`<option value="${v}" ${item.tipo===v?'selected':''}>${l}</option>`).join('')}
+      </select></div>
+      <div class="field"><label>Valor (R$) *</label><input type="number" step="0.01" min="0" id="f_valor" value="${item.valor||''}" placeholder="0,00"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Data</label><input type="date" id="f_data" value="${item.data||todayISO()}"></div>
+      <div class="field"><label>Categoria / centro de custo</label><input id="f_categoria" value="${esc(item.categoria||'')}" placeholder="Ex.: Missões"></div>
+    </div>
+    <div class="field"><label>Descrição</label><input id="f_descricao" value="${esc(item.descricao||'')}" placeholder="Ex.: Oferta do culto de domingo"></div>`;
+}
+const TITLES = {
+  pessoas:['Nova pessoa','Editar pessoa','Cadastro de membro, congregado ou visitante'],
+  celulas:['Nova célula','Editar célula','Grupo pequeno de cuidado e discipulado'],
+  eventos:['Novo evento','Editar evento','Programação publicada na agenda'],
+  financeiro:['Novo lançamento','Editar lançamento','Entrada ou saída financeira']
+};
+function openForm(view, id){
+  const collection = colOf(view);
+  const item = id ? collection.find(x=>x.id===id) : null;
+  const [tNew,tEdit,sub] = TITLES[view];
+  openModal({
+    title: id?tEdit:tNew, sub,
+    body: fieldsFor(view, item),
+    okLabel: id?'Salvar alterações':'Adicionar',
+    onOk: () => {
+      const data = readForm(view);
+      if(!data) return false;
+      if(id){ Object.assign(item, data); }
+      else { collection.push({id:uid(), ...data, ...(view==='pessoas'?{dataCadastro:todayISO(),origem:'manual',revisado:true}:{})}); }
+      persist(view);
+      toast(id?'Alterações salvas':'Registro adicionado');
+      buildNav(); render();
+      return true;
+    }
+  });
+}
+function readForm(view){
+  const val = id => { const e=document.getElementById(id); return e?e.value.trim():''; };
+  if(view==='pessoas'){
+    const nome=val('f_nome'); if(!nome){ flash('f_nome'); return null; }
+    return {nome, cargo:val('f_cargo'), tipo:val('f_tipo'), nascimento:lerNascimento('f'),
+            telefone:val('f_telefone'), email:val('f_email'), endereco:val('f_endereco'), celulaId:val('f_celulaId')};
+  }
+  if(view==='celulas'){
+    const nome=val('f_nome'); if(!nome){ flash('f_nome'); return null; }
+    const dia=val('f_diaSemana');
+    return {nome, lider:val('f_lider'), diaSemana:dia===''?null:Number(dia), endereco:val('f_endereco')};
+  }
+  if(view==='eventos'){
+    const titulo=val('f_titulo'); if(!titulo){ flash('f_titulo'); return null; }
+    return {titulo, data:val('f_data')||todayISO(), local:val('f_local'), descricao:val('f_descricao'), inscritos:Number(val('f_inscritos'))||0};
+  }
+  if(view==='financeiro'){
+    const valor=Number(val('f_valor')); if(!valor||valor<=0){ flash('f_valor'); return null; }
+    return {tipo:val('f_tipo'), valor, data:val('f_data')||todayISO(), categoria:val('f_categoria'), descricao:val('f_descricao')};
+  }
+}
+function flash(id){ const e=document.getElementById(id); if(e){ e.style.borderColor='var(--danger)'; e.style.boxShadow='0 0 0 3px var(--danger-soft)'; e.focus(); } }
+
+function addInscrito(id){
+  const e = db.eventos.find(x=>x.id===id);
+  if(e){ e.inscritos=(e.inscritos||0)+1; persist('eventos'); render(); toast('Inscrito adicionado a '+e.titulo); }
+}
+
+function confirmDelete(view, id){
+  const item = colOf(view).find(x=>x.id===id);
+  const nome = item ? (item.nome||item.titulo||item.descricao||'este registro') : 'este registro';
+  const eraFicha = currentView==='ficha';
+  openModal({
+    title:'Remover registro', sub:'Esta ação não pode ser desfeita.',
+    body:`<p style="color:var(--muted);font-size:.92rem;padding:2px 0 6px">Deseja remover <b style="color:var(--ink)">${esc(nome)}</b>? ${view==='celulas'?'Os membros vinculados ficarão sem célula.':''}</p>`,
+    okLabel:'Remover', danger:true,
+    onOk: () => {
+      db[colName(view)] = colOf(view).filter(x=>x.id!==id);
+      if(view==='celulas'){ db.membros.forEach(m=>{ if(m.celulaId===id) m.celulaId=''; }); persist('pessoas'); }
+      persist(view);
+      toast('Registro removido');
+      if(eraFicha) setView('pessoas'); else { buildNav(); render(); }
+      return true;
+    }
+  });
+}
+
+/* ============ Coleções ============ */
+function colName(view){ return {pessoas:'membros',celulas:'celulas',eventos:'eventos',financeiro:'financeiro'}[view]; }
+function colOf(view){ return db[colName(view)]; }
+function persist(view){ const k={pessoas:K.mem,celulas:K.cel,eventos:K.ev,financeiro:K.fin}[view]; save(k, db[colName(view)]); }
+
+/* ============ Modal genérico ============ */
+function openModal({title,sub,body,okLabel,onOk,danger}){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="overlay" id="overlay">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head"><h3>${title}</h3>${sub?`<p>${sub}</p>`:''}</div>
+        <div class="modal-body">${body}</div>
+        <div class="modal-foot">
+          <button class="btn ghost" id="mCancel">Cancelar</button>
+          <button class="btn ${danger?'danger':''}" id="mOk">${okLabel||'Salvar'}</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML=''; };
+  document.getElementById('mCancel').onclick = close;
+  document.getElementById('overlay').onclick = e => { if(e.target.id==='overlay') close(); };
+  document.getElementById('mOk').onclick = () => { const r = onOk?onOk():true; if(r!==false) close(); };
+  const first = root.querySelector('input,select,textarea'); if(first) setTimeout(()=>first.focus(),60);
+  root.querySelectorAll('input,textarea').forEach(inp=>inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&inp.tagName!=='TEXTAREA'){ e.preventDefault(); document.getElementById('mOk').click(); } }));
+}
+
+/* ============ Toast ============ */
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('show'); clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ============ Link do formulário público ============ */
+function linkFormulario(){ return location.origin + location.pathname + '#cadastro'; }
+
+/* ============ Config / dados ============ */
+document.getElementById('openConfig').onclick = () => {
+  openModal({
+    title:'Configurações e dados', sub:'inAdmav • protótipo local',
+    body:`<div class="config-list">
+      <div class="opt">
+        <b>Formulário de cadastro</b>
+        <p>Abra este link num tablet ou celular na entrada da igreja: a pessoa preenche os próprios dados e eles caem direto na lista de Pessoas, marcados como novos para conferência.</p>
+        <div class="link-box"><input type="text" id="cLink" readonly value="${linkFormulario()}"><button class="btn sm" id="cCopy">Copiar</button></div>
+        <button class="btn ghost sm" id="cOpen" style="margin-top:8px">Abrir formulário agora</button>
+      </div>
+      <div class="opt"><b>Dados de exemplo</b><p>Preenche a igreja com pessoas, cargos, células, eventos e lançamentos fictícios para você explorar.</p><button class="btn ghost sm" id="cReset">Restaurar exemplos</button></div>
+      <div class="opt"><b>Limpar tudo</b><p>Remove todos os registros e deixa o sistema vazio para dados reais.</p><button class="btn danger sm" id="cClear">Apagar todos os dados</button></div>
+      <div class="opt" style="border-style:dashed"><b>Onde ficam os dados?</b><p style="margin-bottom:0">Neste navegador, neste computador. O formulário só cai direto se estiver aberto <b>no mesmo navegador</b> — em outro aparelho, os dados ficam lá. Para a igreja usar de verdade em vários dispositivos, o próximo passo é banco de dados e login.</p></div>
+    </div>`,
+    okLabel:'Fechar'
+  });
+  setTimeout(()=>{
+    const el = id => document.getElementById(id);
+    if(el('cCopy')) el('cCopy').onclick = async () => { const ok = await copiarTexto(linkFormulario()); toast(ok?'Link copiado':'Copie manualmente do campo'); };
+    if(el('cOpen')) el('cOpen').onclick = () => { document.getElementById('modalRoot').innerHTML=''; location.hash = '#cadastro'; };
+    if(el('cReset')) el('cReset').onclick = async () => { await seed(true); document.getElementById('modalRoot').innerHTML=''; setView('painel'); toast('Dados de exemplo restaurados'); };
+    if(el('cClear')) el('cClear').onclick = async () => {
+      db={membros:[],celulas:[],eventos:[],financeiro:[]};
+      await Promise.all([save(K.mem,[]),save(K.cel,[]),save(K.ev,[]),save(K.fin,[]),save(K.seed,true)]);
+      document.getElementById('modalRoot').innerHTML=''; setView('painel'); toast('Todos os dados foram apagados');
+    };
+  },60);
+};
+
+/* ============ FORMULÁRIO PÚBLICO DE CADASTRO (#cadastro) ============ */
+function renderFormPage(){
+  const fp = document.getElementById('formPage');
+  fp.innerHTML = `
+    <div class="fp-wrap">
+      <div class="fp-brand"><span class="in">in</span><span class="admav">Admav</span></div>
+      <div class="fp-title">
+        <h1>Ficha de cadastro</h1>
+        <p>Igreja ADMAV — preencha seus dados.<br>Leva menos de um minuto.</p>
+      </div>
+      <div class="fp-card" id="fpCard">
+        <div class="field"><label>Nome completo *</label><input id="p_nome" placeholder="Como está no seu documento" autocomplete="name"></div>
+        ${campoNascimento('p','')}
+        <div class="field"><label>Telefone / WhatsApp</label><input id="p_telefone" type="tel" inputmode="tel" placeholder="(00) 90000-0000" autocomplete="tel"></div>
+        <div class="field"><label>E-mail <span class="hint">— opcional</span></label><input id="p_email" type="email" placeholder="email@exemplo.com" autocomplete="email"></div>
+        <div class="field"><label>Endereço</label><input id="p_endereco" placeholder="Rua, número, bairro, cidade" autocomplete="street-address"></div>
+
+        <div class="fp-sep">Na igreja</div>
+
+        <div class="field"><label>Você é</label><select id="p_tipo">
+          <option>Membro</option><option>Congregado</option><option selected>Visitante</option>
+        </select></div>
+        <div class="field"><label>Cargo <span class="hint">— se tiver</span></label>${selectCargo('p_cargo','')}</div>
+        <div class="field"><label>Célula <span class="hint">— se participar</span></label>${selectCelula('p_celulaId','')}</div>
+
+        <button class="btn block" id="p_enviar" style="margin-top:20px;padding:14px">Enviar cadastro</button>
+      </div>
+      <div class="fp-foot">Seus dados ficam apenas com a secretaria da igreja.<br>inAdmav &bull; protótipo</div>
+    </div>`;
+  document.getElementById('p_enviar').onclick = enviarFormPublico;
+  document.getElementById('p_nome').focus();
+}
+function enviarFormPublico(){
+  const val = id => { const e=document.getElementById(id); return e?e.value.trim():''; };
+  const nome = val('p_nome');
+  if(!nome){ flash('p_nome'); return; }
+  db.membros.push({
+    id: uid(), nome,
+    cargo: val('p_cargo'),
+    tipo: val('p_tipo') || 'Visitante',
+    nascimento: lerNascimento('p'),
+    telefone: val('p_telefone'),
+    email: val('p_email'),
+    endereco: val('p_endereco'),
+    celulaId: val('p_celulaId'),
+    dataCadastro: todayISO(),
+    origem: 'formulario',
+    revisado: false
+  });
+  persist('pessoas');
+  formPageDone(nome);
+}
+function formPageDone(nome){
+  const primeiro = nome.split(' ')[0];
+  document.getElementById('formPage').innerHTML = `
+    <div class="fp-wrap">
+      <div class="fp-brand"><span class="in">in</span><span class="admav">Admav</span></div>
+      <div class="fp-card">
+        <div class="fp-done">
+          <div class="check">${svg(IC.check)}</div>
+          <h2>Obrigado, ${esc(primeiro)}!</h2>
+          <p>Seu cadastro foi enviado para a secretaria da Igreja ADMAV.<br>Que Deus abençoe sua vida.</p>
+          <button class="btn block" id="p_outro">Cadastrar outra pessoa</button>
+        </div>
+      </div>
+      <div class="fp-foot">inAdmav &bull; protótipo</div>
+    </div>`;
+  document.getElementById('p_outro').onclick = renderFormPage;
+}
+function aplicarModo(){
+  const formMode = location.hash === '#cadastro';
+  document.body.classList.toggle('form-mode', formMode);
+  if(formMode) renderFormPage();
+  else { buildNav(); render(); }
+}
+window.addEventListener('hashchange', aplicarModo);
+
+/* ============ Seed ============ */
+async function seed(){
+  const cel = [
+    {id:'c1',nome:'Célula Vida Nova',lider:'Ricardo Alves',diaSemana:2,endereco:'Jardim Primavera'},
+    {id:'c2',nome:'Célula Esperança',lider:'Fernanda Lima',diaSemana:4,endereco:'Centro'},
+    {id:'c3',nome:'Célula Jovens Luz',lider:'Diego Souza',diaSemana:5,endereco:'Vila Aurora'}
+  ];
+  /* nascimento relativo ao mês atual, para a tela de aniversariantes sempre ter conteúdo */
+  const nascRel = (offMes, dia, ano) => {
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()+offMes);
+    return `${ano}-${String(d.getMonth()+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+  };
+  const P = (id,nome,cargo,tipo,nascimento,telefone,email,endereco,celulaId,dataCadastro,extra) =>
+    Object.assign({id,nome,cargo,tipo,nascimento,telefone,email,endereco,celulaId,dataCadastro,origem:'manual',revisado:true}, extra||{});
+  const mem = [
+    P('m1','Josué Ferreira','Pastor','Membro',nascRel(0,7,1968),'(11) 98888-1010','josue@exemplo.com','Rua das Palmeiras, 120 — Centro','', '2025-03-02'),
+    P('m2','Marcos Antônio Reis','Presbítero','Membro',nascRel(0,19,1974),'(11) 97777-2020','marcos@exemplo.com','Av. Brasil, 455 — Jardim Primavera','c1','2025-04-18'),
+    P('m3','Rute Andrade','Evangelista','Membro',nascRel(1,3,1981),'(11) 96666-3030','rute@exemplo.com','Rua Sete de Setembro, 88 — Centro','c2','2025-05-11'),
+    P('m4','Ricardo Alves','Diácono','Membro',nascRel(1,11,1977),'(11) 95555-4040','ricardo@exemplo.com','Rua Ipê, 34 — Jardim Primavera','c1','2025-06-07'),
+    P('m5','Fernanda Lima','Diaconisa','Membro',nascRel(1,22,1985),'(11) 94444-5050','fernanda@exemplo.com','Rua do Comércio, 210 — Centro','c2','2025-07-20'),
+    P('m6','Diego Souza','Cooperador','Membro',nascRel(2,5,1993),'(11) 93333-6060','diego@exemplo.com','Rua Aurora, 15 — Vila Aurora','c3','2025-08-30'),
+    P('m7','Luana Martins','Auxiliar','Membro',nascRel(0,28,1992),'(11) 92222-7070','luana@exemplo.com','Rua das Acácias, 77 — Vila Aurora','c1','2025-09-14'),
+    P('m8','Maria Oliveira','','Membro','1988-04-12','(11) 91111-8080','maria@exemplo.com','Rua São João, 402 — Centro','c1','2025-11-02'),
+    P('m9','João Pereira','','Membro','1979-09-23','(11) 90000-9090','joao@exemplo.com','Av. Getúlio Vargas, 900 — Centro','c2','2025-12-15'),
+    P('m10','Ana Beatriz Costa','','Congregado','2001-01-30','(11) 98765-4321','','Rua Nova, 12 — Vila Aurora','c3','2026-01-08'),
+    P('m11','Carlos Eduardo','','Membro','1985-03-14','','','Rua Bela Vista, 55 — Centro','c2','2026-02-18'),
+    /* ano de nascimento não informado — caso comum no cadastro real */
+    P('m12','Pedro Henrique','','Visitante','0000-07-19','(11) 98787-1212','pedro@exemplo.com','','', '2026-02-01'),
+    /* chegou pelo formulário público e ainda não foi conferido */
+    P('m13','Tiago Nunes','','Visitante',nascRel(0,15,1999),'(11) 97676-3434','tiago@exemplo.com','Rua Amazonas, 61 — Centro','', todayISO(), {origem:'formulario', revisado:false})
+  ];
+  const hoje = new Date();
+  const plus = d => { const x=new Date(hoje); x.setDate(x.getDate()+d); return x.toISOString().slice(0,10); };
+  const ev = [
+    {id:'e1',titulo:'Culto de Celebração',data:plus(3),local:'Templo sede',descricao:'Culto da família com ceia',inscritos:0},
+    {id:'e2',titulo:'Conferência de Jovens',data:plus(12),local:'Auditório central',descricao:'Três dias de louvor e palavra',inscritos:47},
+    {id:'e3',titulo:'Batismo nas águas',data:plus(25),local:'Chácara Betânia',descricao:'Inscrições abertas',inscritos:12}
+  ];
+  const mkNow = new Date().toISOString().slice(0,7);
+  const fin = [
+    {id:'f1',tipo:'dizimo',valor:3200,data:mkNow+'-04',categoria:'Dízimos',descricao:'Dízimos do 1º domingo'},
+    {id:'f2',tipo:'oferta',valor:850,data:mkNow+'-04',categoria:'Ofertas',descricao:'Oferta do culto'},
+    {id:'f3',tipo:'saida',valor:640,data:mkNow+'-06',categoria:'Estrutura',descricao:'Conta de energia'},
+    {id:'f4',tipo:'oferta',valor:1200,data:mkNow+'-11',categoria:'Missões',descricao:'Oferta missionária'},
+    {id:'f5',tipo:'saida',valor:300,data:mkNow+'-12',categoria:'Kids',descricao:'Material ministério infantil'}
+  ];
+  db = {membros:mem, celulas:cel, eventos:ev, financeiro:fin};
+  await Promise.all([save(K.mem,mem),save(K.cel,cel),save(K.ev,ev),save(K.fin,fin),save(K.seed,true)]);
+}
+
+/* ============ Drawer mobile ============ */
+function openDrawer(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('scrim').classList.add('show'); }
+function closeDrawer(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('scrim').classList.remove('show'); }
+document.getElementById('hamburger').onclick = openDrawer;
+document.getElementById('scrim').onclick = closeDrawer;
+document.getElementById('searchInput').addEventListener('input', e=>{ searchTerm=e.target.value; render(); });
+
+/* Outra aba (ex.: o tablet do formulário) gravou algo — recarrega e atualiza */
+window.addEventListener('storage', async e => {
+  if(!e.key || !e.key.startsWith('inadmav:')) return;
+  await carregar();
+  if(!document.body.classList.contains('form-mode')){ buildNav(); render(); }
+});
+
+/* ============ Init ============ */
+async function carregar(){
+  const [mem,cel,ev,fin] = await Promise.all([
+    load(K.mem,null), load(K.cel,null), load(K.ev,null), load(K.fin,null)
+  ]);
+  db = {membros:mem||[], celulas:cel||[], eventos:ev||[], financeiro:fin||[]};
+  return {mem,cel,ev,fin};
+}
+(async function init(){
+  const seeded = await load(K.seed,false);
+  const {mem,cel,ev,fin} = await carregar();
+  if(!seeded && !mem && !cel && !ev && !fin) await seed();
+  aplicarModo();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "pessoas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "nasc_mes", "order": "ASCENDING" },
+        { "fieldPath": "nasc_dia", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pessoas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "revisado", "order": "ASCENDING" },
+        { "fieldPath": "nome_busca", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pessoas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "cargo_id", "order": "ASCENDING" },
+        { "fieldPath": "nome_busca", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pessoas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "celula_id", "order": "ASCENDING" },
+        { "fieldPath": "nome_busca", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pessoas",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ip_origem", "order": "ASCENDING" },
+        { "fieldPath": "criado_em", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "lancamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "tipo", "order": "ASCENDING" },
+        { "fieldPath": "data", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "lancamentos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pessoa_id", "order": "ASCENDING" },
+        { "fieldPath": "data", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
